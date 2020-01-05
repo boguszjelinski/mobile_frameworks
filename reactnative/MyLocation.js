@@ -4,21 +4,11 @@ import Canvas from 'react-native-canvas';
 import {View} from 'react-native';
 
 class MyLocation extends Component {
-  /*state = {
-    lastLoc: undefined,
-    currentLoc: undefined,
-    error: '',
-  };*/
-  lastLoc = undefined;
-
-  currentLoc = undefined;
-  watchID = null;
   _CONTEXT = null;
   radius = 100;
   delay = 100;
   cx = 150;
   cy = 150;
-  locationSubscription;
 
   componentDidMount = () => {
     Geolocation.setRNConfiguration({
@@ -28,25 +18,10 @@ class MyLocation extends Component {
     this.watchID = Geolocation.watchPosition(
       position => {
         if (position && position.coords) {
-          this.lastLoc = this.currentLoc;
-          this.currentLoc = position;
-          //this.animate(position.coords.heading);
-          let i = 1;
-          for (i = 1; i < 5; i++) {
-            var timer = () => {
-              var h = position.coords.heading;
-              var ii = i;
-              setTimeout(() => {
-                this.drawCompass(ii * 10);
-              }, ii * this.delay);
-            };
-            timer();
-          }
+          this.drawCompass(position.coords.heading);
         }
       },
-      error => {
-        error: error.message;
-      },
+      error => {},
       {timeout: 1000, enableHighAccuracy: true, distanceFilter: 1},
     );
   };
@@ -62,7 +37,7 @@ class MyLocation extends Component {
       </View>
     );
   }
-
+  /*
   animate(head) {
     if (head && this.lastLoc && this.lastLoc.coords) {
       let diff = 1.0;
@@ -83,11 +58,9 @@ class MyLocation extends Component {
             h = 360;
           }
           var timer = () => {
-            var hh = h;
-            var ii = i;
             setTimeout(() => {
-              this.drawCompass(hh);
-            }, ii * this.delay);
+              this.drawCompass(h);
+            }, i * this.delay);
           };
           timer();
           timer(h, i);
@@ -99,7 +72,7 @@ class MyLocation extends Component {
     }
     return 0;
   }
-
+  */
   handleCanvas = canvas => {
     if (canvas) {
       this._CONTEXT = canvas.getContext('2d');

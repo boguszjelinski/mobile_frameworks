@@ -1,0 +1,37 @@
+The total demand:(0,17,19)(1,7,14)(2,8,13)(3,19,8)(4,6,8)(5,11,15)(6,19,9)(7,5,9)(8,15,18)
+The total supply:(0,4,19)(1,1,0)(2,3,17)(3,0,2)(4,11,16)(5,19,4)(6,18,15)(7,12,11)(8,12,4)(9,11,19)
+cab 0 takes customer 3
+cab 1 takes customer 1
+cab 2 takes customer 0
+cab 3 takes customer 2
+cab 5 takes customer 4
+cab 6 takes customer 8
+cab 7 takes customer 5
+cab 8 takes customer 7
+cab 9 takes customer 6
+Sum: 16 
+
+Range 10 to 15:
+Customers:(5,11,15)
+Cabs:(7,12,11)
+cab 7 takes customer 5
+Sum: 0 
+
+Range 15 to 20:
+Customers:(0,17,19)(3,19,8)(6,19,9)(8,15,18)
+Cabs:(0,4,19)(2,3,17)(4,11,16)(6,18,15)(9,11,19)
+cab 0 takes customer 3
+cab 2 takes customer 0
+cab 6 takes customer 8
+cab 9 takes customer 6
+Sum: 0 
+
+Unserved customers and cabs without demand:
+Customers:(1,7,14)(2,8,13)(4,6,8)(7,5,9)
+Cabs:(1,1,0)(3,0,2)(4,11,16)(5,19,4)(8,12,4)
+cab 1 takes customer 1
+cab 3 takes customer 2
+cab 5 takes customer 4
+cab 8 takes customer 7
+Split cost: 16 
+LCM sum: 16 

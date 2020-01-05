@@ -1,0 +1,146 @@
+import { Component, ViewChild, ElementRef  } from '@angular/core';
+import { Geolocation ,GeolocationOptions } from '@ionic-native/geolocation/ngx';
+import { Platform } from '@ionic/angular';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+})
+
+export class HomePage {
+
+  @ViewChild('myCanvas') canvas : ElementRef;
+  canvasElement: any;
+
+  private _CANVAS  : any;
+  private _CONTEXT : any;
+  
+  circleRadius:number = 100;
+  cx:number = 150;
+  cy:number = 150;
+  delay:number = 10;
+
+  heading: number = undefined;
+  prevHeading : number = undefined;
+  watch: any;
+  error: any;
+
+  constructor(public platform: Platform, private geolocation: Geolocation) {
+  }
+
+  ngAfterViewInit(){
+    let options : GeolocationOptions = {
+      enableHighAccuracy: true
+    };
+    this.platform.ready().then(() => {
+      this.watch = this.geolocation.watchPosition(options); 
+      this.watch.subscribe((resp) => {
+        if (resp.coords && resp.coords.heading != 0) {
+          this.prevHeading = this.heading;
+          this.heading = resp.coords.heading;
+          let wasAnimated : boolean;
+          wasAnimated = this.animate();
+          if (!wasAnimated) {
+            this.drawCompass(this.heading);
+          }
+        } // else in RED
+      }, error => this.error = error );
+    });
+    this._CANVAS 	    = this.canvas.nativeElement;
+    this._CANVAS.width  	= 300;
+    this._CANVAS.height 	= 300;
+    this.initialiseCanvas();
+    this.drawCompass(0);
+  }
+
+  animate() : boolean {
+    if (this.heading && this.prevHeading) {
+      let diff = 1.0;
+      if (this.prevHeading && Math.abs(this.heading - this.prevHeading) > 1.1) {
+        if (this.heading - this.prevHeading < 0) {
+          diff = -1.0;
+        }
+        if (Math.abs(this.heading - this.prevHeading) > 180) {
+          diff *= -1.0; // eg. 20 -> 340
+        }
+        let h = this.prevHeading + diff;
+        let i = 1;
+        while (Math.abs(h - this.heading) > 1.1) {
+          if (h > 360) {
+            h = 0;
+          } else if (h < 0) {
+            h = 360;
+          }
+          var timer = () => {
+            var hh = h;
+            var ii = i;
+            setTimeout(() => {
+              this.drawCompass(hh);
+            }, ii * this.delay);
+          };
+          timer();
+          h += diff;
+          i++;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  initialiseCanvas() {
+    if(this._CANVAS.getContext) {
+      this._CONTEXT = this._CANVAS.getContext('2d');
+    }
+  }
+
+  clearCanvas() {
+    this._CONTEXT.stroke();
+    this._CONTEXT.fillStyle = '#FFFFFF';
+    this._CONTEXT.fillRect(0, 0, this._CANVAS.width, this._CANVAS.height);
+  }
+  
+  private drawCompass (heading: number) : void {
+    let labels = ['N','3','6','E','12','15','S','21','24','W','30','33'];    
+    this.clearCanvas();
+    // trangle
+    this._CONTEXT.font = '15px Arial';
+    this._CONTEXT.fillStyle = 'red'
+    this._CONTEXT.strokeStyle = 'red';
+    this._CONTEXT.beginPath();
+    this._CONTEXT.moveTo(this.cx, this.cy-this.circleRadius-2);
+    this._CONTEXT.lineTo(this.cx-10, this.cy-this.circleRadius-12);
+    this._CONTEXT.lineTo(this.cx+10, this.cy-this.circleRadius-12);
+    this._CONTEXT.lineTo(this.cx, this.cy-this.circleRadius-2);
+    this._CONTEXT.fill();
+    this._CONTEXT.fillStyle = 'blue'
+    this._CONTEXT.strokeStyle = 'black';
+    this._CONTEXT.lineWidth = 2;
+    this._CONTEXT.beginPath();
+    this._CONTEXT.arc(this.cx, this.cy, this.circleRadius, 0, 2*Math.PI);
+    this._CONTEXT.stroke();
+    this._CONTEXT.beginPath();
+    for (let i=0; i<12; i++)
+        this.putText(i*30, heading, this.circleRadius-20, labels[i]); // 30: step of degree 
+    this._CONTEXT.closePath();    
+    this._CONTEXT.stroke();
+  }
+
+  toRadians = (angle) => { return angle * (Math.PI / 180); }
+
+  private putText (degree:number, heading: number, radius: number, label: string):void {    
+    let angle:number = degree - heading;
+    let sinus:number = Math.sin(this.toRadians(angle));
+    let cosinus: number = Math.cos(this.toRadians(angle));
+    let x = this.cx + radius*sinus-6;
+    let y = this.cy - radius*cosinus+5;
+    this._CONTEXT.fillText(label,x,y);
+    let x1 = this.cx + (this.circleRadius-8)*sinus;
+    let y1 = this.cy - (this.circleRadius-8)*cosinus;
+    let x2 = this.cx + this.circleRadius*sinus;
+    let y2 = this.cy - this.circleRadius*cosinus;
+    this._CONTEXT.moveTo(x1,y1);
+    this._CONTEXT.lineTo(x2, y2);
+  }  
+}
