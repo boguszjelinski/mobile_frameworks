@@ -14,12 +14,12 @@ export class HomePage {
   canvasElement: any;
 
   private _CANVAS  : any;
-  private _CONTEXT : any;
+  private ctx : any;
   
   circleRadius:number = 100;
   cx:number = 150;
   cy:number = 150;
-  delay:number = 10;
+  delay:number = 20;
 
   heading: number = undefined;
   prevHeading : number = undefined;
@@ -41,9 +41,6 @@ export class HomePage {
           this.heading = resp.coords.heading;
           let wasAnimated : boolean;
           wasAnimated = this.animate();
-          if (!wasAnimated) {
-            this.drawCompass(this.heading);
-          }
         } // else in RED
       }, error => this.error = error );
     });
@@ -56,17 +53,17 @@ export class HomePage {
 
   animate() : boolean {
     if (this.heading && this.prevHeading) {
-      let diff = 1.0;
+      let diff = 2.0;
       if (this.prevHeading && Math.abs(this.heading - this.prevHeading) > 1.1) {
         if (this.heading - this.prevHeading < 0) {
-          diff = -1.0;
+          diff = -2.0;
         }
         if (Math.abs(this.heading - this.prevHeading) > 180) {
           diff *= -1.0; // eg. 20 -> 340
         }
         let h = this.prevHeading + diff;
         let i = 1;
-        while (Math.abs(h - this.heading) > 1.1) {
+        while (Math.abs(h - this.heading) > 2.1) {
           if (h > 360) {
             h = 0;
           } else if (h < 0) {
@@ -91,56 +88,55 @@ export class HomePage {
 
   initialiseCanvas() {
     if(this._CANVAS.getContext) {
-      this._CONTEXT = this._CANVAS.getContext('2d');
+      this.ctx = this._CANVAS.getContext('2d');
     }
   }
 
   clearCanvas() {
-    this._CONTEXT.stroke();
-    this._CONTEXT.fillStyle = '#FFFFFF';
-    this._CONTEXT.fillRect(0, 0, this._CANVAS.width, this._CANVAS.height);
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.fillRect(0, 0, this._CANVAS.width, this._CANVAS.height);
   }
   
   private drawCompass (heading: number) : void {
     let labels = ['N','3','6','E','12','15','S','21','24','W','30','33'];    
     this.clearCanvas();
-    // trangle
-    this._CONTEXT.font = '15px Arial';
-    this._CONTEXT.fillStyle = 'red'
-    this._CONTEXT.strokeStyle = 'red';
-    this._CONTEXT.beginPath();
-    this._CONTEXT.moveTo(this.cx, this.cy-this.circleRadius-2);
-    this._CONTEXT.lineTo(this.cx-10, this.cy-this.circleRadius-12);
-    this._CONTEXT.lineTo(this.cx+10, this.cy-this.circleRadius-12);
-    this._CONTEXT.lineTo(this.cx, this.cy-this.circleRadius-2);
-    this._CONTEXT.fill();
-    this._CONTEXT.fillStyle = 'blue'
-    this._CONTEXT.strokeStyle = 'black';
-    this._CONTEXT.lineWidth = 2;
-    this._CONTEXT.beginPath();
-    this._CONTEXT.arc(this.cx, this.cy, this.circleRadius, 0, 2*Math.PI);
-    this._CONTEXT.stroke();
-    this._CONTEXT.beginPath();
+    this.triangle();
+    this.ctx.font = '15px Arial';
+    this.ctx.fillStyle = 'blue'
+    this.ctx.strokeStyle = 'black';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.arc(this.cx, this.cy, this.circleRadius, 0, 2*Math.PI);
+    this.ctx.stroke();
     for (let i=0; i<12; i++)
         this.putText(i*30, heading, this.circleRadius-20, labels[i]); // 30: step of degree 
-    this._CONTEXT.closePath();    
-    this._CONTEXT.stroke();
+    this.ctx.stroke();
   }
 
   toRadians = (angle) => { return angle * (Math.PI / 180); }
 
+  private triangle () {
+    this.ctx.fillStyle = 'red'
+    this.ctx.strokeStyle = 'red';
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.cx, this.cy-this.circleRadius-2);
+    this.ctx.lineTo(this.cx-10, this.cy-this.circleRadius-12);
+    this.ctx.lineTo(this.cx+10, this.cy-this.circleRadius-12);
+    this.ctx.lineTo(this.cx, this.cy-this.circleRadius-2);
+    this.ctx.fill();
+  }
   private putText (degree:number, heading: number, radius: number, label: string):void {    
     let angle:number = degree - heading;
     let sinus:number = Math.sin(this.toRadians(angle));
     let cosinus: number = Math.cos(this.toRadians(angle));
     let x = this.cx + radius*sinus-6;
     let y = this.cy - radius*cosinus+5;
-    this._CONTEXT.fillText(label,x,y);
+    this.ctx.fillText(label,x,y);
     let x1 = this.cx + (this.circleRadius-8)*sinus;
     let y1 = this.cy - (this.circleRadius-8)*cosinus;
     let x2 = this.cx + this.circleRadius*sinus;
     let y2 = this.cy - this.circleRadius*cosinus;
-    this._CONTEXT.moveTo(x1,y1);
-    this._CONTEXT.lineTo(x2, y2);
+    this.ctx.moveTo(x1,y1);
+    this.ctx.lineTo(x2, y2);
   }  
 }

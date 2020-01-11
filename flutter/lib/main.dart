@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   Geolocator geolocator = Geolocator();
-  double heading, prevHeading;
+  double heading=0, prevHeading=0;
   StreamSubscription<Position> positionStream ;
 
   @override
@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //  PermissionHandler().requestPermissions([PermissionGroup.location]);
     geolocator.forceAndroidLocationManager = true;
     geolocator.checkGeolocationPermissionStatus();
-        
+    
   /*  checkPermission();
     _getLocation().then((position) {
       if (position==null || position.heading == null)
@@ -60,30 +60,33 @@ class _MyHomePageState extends State<MyHomePage> {
         accuracy: LocationAccuracy.best, timeInterval: 1000))
         .listen((position) {
           if (position == null || position.heading==null) return;
-          double head = position.heading;
-          animate(head);
-          setState(() {
+          animate(position.heading, prevHeading);
+       /*   setState(() {
             prevHeading = head;
             heading = head;
           });
+          */
     });
   }
 
-  void animate(double head) async {
+  void animate(double head, double prevHead) async {
     double diff = 1.0;
-    if (abs(head - prevHeading)>1.0) {
-      if (head - prevHeading < 0) diff = -1.0;
-      if (abs(head - prevHeading)>180) diff *= -1.0; // eg. 20 -> 340
-      for (double h = prevHeading + diff; abs(h - head) > 1.1; h+= diff) {
+    if (abs(head - prevHead)>1.0) {
+      if (head - prevHead < 0) diff = -1.0;
+      if (abs(head - prevHead)>180) diff *= -1.0; // eg. 20 -> 340
+      for (double h = prevHead + diff; abs(h - head) > 1.1; h+= diff) {
         if (h>360) h = 0;
         else if (h<0) h = 360;
         setState(() {
-          prevHeading = heading;
           heading = h;
         });
         await Future.delayed(new Duration(milliseconds: 15));
       }
     }
+    setState(() {
+      prevHeading = head; 
+      heading = head;
+    });
   }
 
   abs(double d) {
@@ -119,8 +122,8 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             //Text(heading == 0.0 ? "?" : heading.toString().substring(0,0)
             //),
-            new CompassBody(heading == null ? 0.0 : heading)
-                   ],
+            new CompassBody(heading)
+          ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
